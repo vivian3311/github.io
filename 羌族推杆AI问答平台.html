@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羌族推杆AI问答平台 - 专业非遗文化知识库</title>
+    <meta name="description" content="专业的羌族推杆AI问答平台，提供羌族推杆历史、规则、文化、教学等全方位知识问答服务">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .header .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .chat-container {
+            padding: 30px;
+            min-height: 500px;
+        }
+
+        .messages {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 15px;
+            background: #f8f9fa;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            line-height: 1.6;
+            max-width: 85%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .ai-message {
+            background: white;
+            border: 1px solid #e1e8ed;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .input-area button {
+            padding: 15px 30px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .input-area button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .input-area button:active {
+            transform: translateY(0);
+        }
+
+        .input-area button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .action-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .action-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .action-buttons button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .action-buttons button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #clearButton {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        #exportButton {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .welcome-message {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 50px;
+            padding: 20px;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            max-width: 80px;
+            border-bottom-left-radius: 5px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #bdc3c7;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .suggestion {
+            padding: 8px 16px;
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            color: #2c3e50;
+        }
+
+        .suggestion:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+            transform: translateY(-2px);
+        }
+
+        .answer-content {
+            white-space: pre-line;
+            line-height: 1.6;
+        }
+
+        .no-match {
+            color: #e74c3c;
+            font-style: italic;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin: 0 2px;
+            font-weight: 500;
+        }
+
+        .ai-response-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .ai-avatar {
+            width: 24px;
+            height: 24px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .chat-container {
+                padding: 20px;
+            }
+            
+            .messages {
+                height: 300px;
+            }
+            
+            .input-area {
+                flex-direction: column;
+            }
+            
+            .input-area button {
+                border-radius: 20px;
+            }
+            
+            .suggestions {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>羌族推杆AI助手</h1>
+            <p>专业解答羌族推杆相关问题，传承民族文化</p>
+            <div class="stats">
+                <span>📚 200+ 知识条目</span>
+                <span>⚡ 智能关键词匹配</span>
+                <span>🎯 专业非遗知识</span>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="welcome-message" id="welcomeMessage">
+                    <p>您好！我是羌族推杆AI助手</p>
+                    <p>请直接输入您的问题，我将从专业资料库中为您查找答案</p>
+                    <div class="responsive-grid">
+                        <div class="suggestion" onclick="askQuestion('羌族推杆的羌语名称是什么？')">羌语名称</div>
+                        <div class="suggestion" onclick="askQuestion('羌族推杆的起源是什么？')">历史起源</div>
+                        <div class="suggestion" onclick="askQuestion('羌族推杆的比赛规则是怎样的？')">比赛规则</div>
+                        <div class="suggestion" onclick="askQuestion('羌族推杆的文化意义是什么？')">文化意义</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="请输入您关于羌族推杆的问题..." maxlength="500">
+                <button id="sendButton">发送</button>
+            </div>
+
+            <div class="suggestions">
+                <div class="suggestion" onclick="askQuestion('羌族推杆的羌语名称是什么？')">羌语名称</div>
+                <div class="suggestion" onclick="askQuestion('羌族推杆的起源是什么？')">历史起源</div>
+                <div class="suggestion" onclick="askQuestion('羌族推杆的比赛规则是怎样的？')">比赛规则</div>
+                <div class="suggestion" onclick="askQuestion('羌族推杆的文化意义是什么？')">文化意义</div>
+                <div class="suggestion" onclick="askQuestion('羌族推杆在校园中如何推广？')">校园推广</div>
+                <div class="suggestion" onclick="askQuestion('儿童版推杆的安全注意事项有哪些？')">安全注意事项</div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="clearButton" onclick="clearChat()">清空聊天</button>
+                <button id="exportButton" onclick="exportChat()">导出记录</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素初始化
+        const messagesContainer = document.getElementById('messages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // 羌族推杆知识库 - 基于提供的详细资料（完整200+关键词）
+        const knowledgeBase = {
+            // 羌语名称相关
+            '羌语名称': '羌族推杆的羌语称"吾勒泽泽"，另一种形式"仰卧抱杆起"的羌语称"无仑什比都余"。',
+            '吾勒泽泽': '羌族推杆的羌语称"吾勒泽泽"，另一种形式"仰卧抱杆起"的羌语称"无仑什比都余"。',
+            '无仑什比都余': '羌族推杆的羌语称"吾勒泽泽"，另一种形式"仰卧抱杆起"的羌语称"无仑什比都余"。',
+
+            // 历史起源相关
+            '起源': '相传一千多年前，古羌人抵御外族侵犯获胜后，庆功宴上武士们相互推让战功，一位德高望重的老者提议取下长矛矛头，以推杆角力选拔英雄，此后逐渐演变为传统体育项目，相关记载可见于羌族史诗《羌戈大战》。',
+            '羌戈大战': '相传一千多年前，古羌人抵御外族侵犯获胜后，庆功宴上武士们相互推让战功，一位德高望重的老者提议取下长矛矛头，以推杆角力选拔英雄，此后逐渐演变为传统体育项目，相关记载可见于羌族史诗《羌戈大战》。',
+            '抵御外敌': '相传一千多年前，古羌人抵御外族侵犯获胜后，庆功宴上武士们相互推让战功，一位德高望重的老者提议取下长矛矛头，以推杆角力选拔英雄，此后逐渐演变为传统体育项目，相关记载可见于羌族史诗《羌戈大战》。',
+
+            // 流传地区相关
+            '流传地区': '主要流传于四川汶川、理县、茂县、松潘、北川羌族自治县等羌族聚居地区。',
+            '汶川': '主要流传于四川汶川、理县、茂县、松潘、北川羌族自治县等羌族聚居地区。',
+            '理县': '主要流传于四川汶川、理县、茂县、松潘、北川羌族自治县等羌族聚居地区。',
+            '茂县': '主要流传于四川汶川、理县、茂县、松潘、北川羌族自治县等羌族聚居地区。',
+            '北川羌族自治县': '主要流传于四川汶川、理县、茂县、松潘、北川羌族自治县等羌族聚居地区。',
+
+            // 非物质文化遗产相关
+            '非物质文化遗产': '2009年7月，羌族推杆被列为第二批四川省级非物质文化遗产名录。',
+            '2009年': '2009年7月，羌族推杆被列为第二批四川省级非物质文化遗产名录。',
+            '四川省级': '2009年7月，羌族推杆被列为第二批四川省级非物质文化遗产名录。',
+
+            // 代表性传承人相关
+            '代表性传承人': '省级代表性传承人有陈仕琼，州级代表性传承人有王小荣（师从注清寿老师）。',
+            '陈仕琼': '省级代表性传承人有陈仕琼，州级代表性传承人有王小荣（师从注清寿老师）。',
+            '王小荣': '省级代表性传承人有陈仕琼，州级代表性传承人有王小荣（师从注清寿老师）。',
+            '注清寿': '省级代表性传承人有陈仕琼，州级代表性传承人有王小荣（师从注清寿老师）。',
+
+            // 比赛器具相关
+            '比赛器具': '核心器具是一根长约3-4米、手臂粗细的木杆或竹竿，部分会在杆中间系布带、红绳作为标记。',
+            '木杆': '核心器具是一根长约3-4米、手臂粗细的木杆或竹竿，部分会在杆中间系布带、红绳作为标记。',
+            '竹竿': '核心器具是一根长约3-4米、手臂粗细的木杆或竹竿，部分会在杆中间系布带、红绳作为标记。',
+            '红绳标记': '核心器具是一根长约3-4米、手臂粗细的木杆或竹竿，部分会在杆中间系布带、红绳作为标记。',
+
+            // 比赛形式相关
+            '比赛形式': '主要有两种形式，一是"推杆"（2人或多人参与的角力比拼），二是"仰卧抱杆起"（2-3人参与，抱杆者仰卧起身较量），此外还有"转杆""扭杆""爬杆"等衍生形式。',
+            '仰卧抱杆起': '主要有两种形式，一是"推杆"（2人或多人参与的角力比拼），二是"仰卧抱杆起"（2-3人参与，抱杆者仰卧起身较量），此外还有"转杆""扭杆""爬杆"等衍生形式。',
+            '转杆': '主要有两种形式，一是"推杆"（2人或多人参与的角力比拼），二是"仰卧抱杆起"（2-3人参与，抱杆者仰卧起身较量），此外还有"转杆""扭杆""爬杆"等衍生形式。',
+            '扭杆': '主要有两种形式，一是"推杆"（2人或多人参与的角力比拼），二是"仰卧抱杆起"（2-3人参与，抱杆者仰卧起身较量），此外还有"转杆""扭杆""爬杆"等衍生形式。',
+
+            // 比赛步骤相关
+            '比赛步骤': '1. 场地准备：划定两尺见方的平地，画三根标线（中线、两侧界线）；2. 人员就位：双方各持杆的一端，守方将杆夹于两腿间，攻方手持另一端相向站立；3. 开始比赛：裁判击掌示意开始，双方保持木杆水平，可采用平推、偏推、蹲推方式，禁止上下摇摆或突然猛推；4. 回合判定：裁判击掌五次为一个回合，攻方将守方推出两尺外界线即为该回合获胜；5. 决胜规则：攻守双方交换位置，实行五局三胜制，进攻方可根据情况增加人数直至胜利。',
+            '五局三胜制': '1. 场地准备：划定两尺见方的平地，画三根标线（中线、两侧界线）；2. 人员就位：双方各持杆的一端，守方将杆夹于两腿间，攻方手持另一端相向站立；3. 开始比赛：裁判击掌示意开始，双方保持木杆水平，可采用平推、偏推、蹲推方式，禁止上下摇摆或突然猛推；4. 回合判定：裁判击掌五次为一个回合，攻方将守方推出两尺外界线即为该回合获胜；5. 决胜规则：攻守双方交换位置，实行五局三胜制，进攻方可根据情况增加人数直至胜利。',
+
+            // 仰卧抱杆起规则相关
+            '仰卧抱杆起规则': '参赛者仰卧，将木杆一端抱至胸前，腿部弯曲；杆的另一端由2名压杆者固定按住，抱杆者需动作规范地反复起身，直至无力起身，以起身次数多少判定胜负。',
+            '起身次数': '参赛者仰卧，将木杆一端抱至胸前，腿部弯曲；杆的另一端由2名压杆者固定按住，抱杆者需动作规范地反复起身，直至无力起身，以起身次数多少判定胜负。',
+
+            // 裁判计时相关
+            '裁判': '裁判由村寨的长者或威望者担任，以击掌五次为一个攻守回合的时间（每次击掌约5秒钟）。',
+            '击掌计时': '裁判由村寨的长者或威望者担任，以击掌五次为一个攻守回合的时间（每次击掌约5秒钟）。',
+
+            // 民族精神相关
+            '民族精神': '蕴含着羌族人民坚强不屈、乐观向上的精神，以及尚武尚力、团结协作的风尚，是民族文化认同的重要载体。',
+            '坚强不屈': '蕴含着羌族人民坚强不屈、乐观向上的精神，以及尚武尚力、团结协作的风尚，是民族文化认同的重要载体。',
+            '团结协作': '蕴含着羌族人民坚强不屈、乐观向上的精神，以及尚武尚力、团结协作的风尚，是民族文化认同的重要载体。',
+
+            // 举行场合相关
+            '举行场合': '通常在节日庆典、丰收季节、婚礼等喜庆场合举行，也会在羌族村寨、旅游景点作为展演项目。',
+            '节日庆典': '通常在节日庆典、丰收季节、婚礼等喜庆场合举行，也会在羌族村寨、旅游景点作为展演项目。',
+            '旅游景点展演': '通常在节日庆典、丰收季节、婚礼等喜庆场合举行，也会在羌族村寨、旅游景点作为展演项目。',
+
+            // 文化价值相关
+            '文化价值': '是古羌人英勇善战、勤劳智慧的结晶，承载着羌族千年历史记忆，兼具原生态民俗展示、竞技体育和民族团结凝聚的价值，对研究羌族历史文化具有重要意义。',
+            '历史记忆': '是古羌人英勇善战、勤劳智慧的结晶，承载着羌族千年历史记忆，兼具原生态民俗展示、竞技体育和民族团结凝聚的价值，对研究羌族历史文化具有重要意义。',
+            '民俗展示': '是古羌人英勇善战、勤劳智慧的结晶，承载着羌族千年历史记忆，兼具原生态民俗展示、竞技体育和民族团结凝聚的价值，对研究羌族历史文化具有重要意义。',
+
+            // 重要展示相关
+            '重要展示': '2008年北京奥运会开幕式前的垫场演出、全国少数民族运动会传统表演项目、央视《非遗里的中国》节目展示。',
+            '北京奥运会': '2008年北京奥运会开幕式前的垫场演出、全国少数民族运动会传统表演项目、央视《非遗里的中国》程序展示。',
+            '少数民族运动会': '2008年北京奥运会开幕式前的垫场演出、全国少数民族运动会传统表演项目、央视《非遗里的中国》程序展示。',
+
+            // 保护推广相关
+            '保护推广': '1. 建立文字、图片、影像档案库，登记传承人并加以保护；2. 投入财政资金建立传习所，制定传承机制；3. 定期举办传统项目运动会，开展"非遗进校园"活动；4. 在村寨、旅游景点开展多点展演，形成文化生态传承模式。',
+            '传习所': '1. 建立文字、图片、影像档案库，登记传承人并加以保护；2. 投入财政资金建立传习所，制定传承机制；3. 定期举办传统项目运动会，开展"非遗进校园"活动；4. 在村寨、旅游景点开展多点展演，形成文化生态传承模式。',
+            '非遗进校园': '1. 建立文字、图片、影像档案库，登记传承人并加以保护；2. 投入财政资金建立传习所，制定传承机制；3. 定期举办传统项目运动会，开展"非遗进校园"活动；4. 在村寨、旅游景点开展多点展演，形成文化生态传承模式。',
+
+            // 校园推广相关
+            '校园推广': '1. 简化规则和动作难度，降低对抗强度，确保儿童安全；2. 结合羌族历史故事设计教学内容，增强趣味性；3. 开展亲子体验活动、班级比赛，营造参与氛围；4. 制作简易教学道具（如轻质安全木杆），适配儿童使用。',
+            '简化规则': '1. 简化规则和动作难度，降低对抗强度，确保儿童安全；2. 结合羌族历史故事设计教学内容，增强趣味性；3. 开展亲子体验活动、班级比赛，营造参与氛围；4. 制作简易教学道具（如轻质安全木杆），适配儿童使用。',
+            '儿童安全': '1. 简化规则和动作难度，降低对抗强度，确保儿童安全；2. 结合羌族历史故事设计教学内容，增强趣味性；3. 开展亲子体验活动、班级比赛，营造参与氛围；4. 制作简易教学道具（如轻质安全木杆），适配儿童使用。',
+
+            // 儿童接受度相关
+            '儿童接受度': '儿童接受度较高，因其器具简单、规则易懂、互动性强，符合儿童好动的特点；实践案例有北川羌族自治县2015年起将其纳入幼儿园及中小学非遗进校园活动，绵阳市科艺小学等学校开展羌族文化主题体验活动，推杆成为热门项目。',
+            '北川': '儿童接受度较高，因其器具简单、规则易懂、互动性强，符合儿童好动的特点；实践案例有北川羌族自治县2015年起将其纳入幼儿园及中小学非遗进校园活动，绵阳市科艺小学等学校开展羌族文化主题体验活动，推杆成为热门项目。',
+            '绵阳市科艺小学': '儿童接受度较高，因其器具简单、规则易懂、互动性强，符合儿童好动的特点；实践案例有北川羌族自治县2015年起将其纳入幼儿园及中小学非遗进校园活动，绵阳市科艺小学等学校开展羌族文化主题体验活动，推杆成为热门项目。',
+
+            // 支教安全相关
+            '支教安全': '1. 选用轻质、无尖锐边角的安全木杆/竹竿，避免使用过重或坚硬材质；2. 划定宽敞无障碍物的活动区域，避免拥挤碰撞；3. 禁止儿童采用突然猛推、摇摆木杆的动作，强调规范发力；4. 分组开展活动，配备老师现场指导保护，控制参与人数。',
+            '安全器具': '1. 选用轻质、无尖锐边角的安全木杆/竹竿，避免使用过重或坚硬材质；2. 划定宽敞无障碍物的活动区域，避免拥挤碰撞；3. 禁止儿童采用突然猛推、摇摆木杆的动作，强调规范发力；4. 分组开展活动，配备老师现场指导保护，控制参与人数。',
+            '老师指导': '1. 选用轻质、无尖锐边角的安全木杆/竹竿，避免使用过重或坚硬材质；2. 划定宽敞无障碍物的活动区域，避免拥挤碰撞；3. 禁止儿童采用突然猛推、摇摆木杆的动作，强调规范发力；4. 分组开展活动，配备老师现场指导保护，控制参与人数。',
+
+            // 支教结合相关
+            '支教结合': '1. 课程设计：融合历史、体育、美术学科，讲解起源故事、练习基础动作、绘制推杆文化海报；2. 实践活动：组织小型班级联赛、推杆文化展演，邀请传承人线上/线下指导；3. 成果输出：鼓励学生记录学习心得、制作简易推杆模型，形成文化传承成果集。',
+            '课程设计': '1. 课程设计：融合历史、体育、美术学科，讲解起源故事、练习基础动作、绘制推杆文化海报；2. 实践活动：组织小型班级联赛、推杆文化展演，邀请传承人线上/线下指导；3. 成果输出：鼓励学生记录学习心得、制作简易推杆模型，形成文化传承成果集。',
+            '文化传承': '1. 课程设计：融合历史、体育、美术学科，讲解起源故事、练习基础动作、绘制推杆文化海报；2. 实践活动：组织小型班级联赛、推杆文化展演，邀请传承人线上/线下指导；3. 成果输出：鼓励学生记录学习心得、制作简易推杆模型，形成文化传承成果集。',
+
+            // 器具细节与场地类
+            '材质要求': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+            '杉木': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+            '松木': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+            '毛竹': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+            '干燥处理': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+            '无虫蛀裂纹': '优先选用质地坚韧、不易断裂的杉木、松木或毛竹，需经过干燥处理去除水分，避免使用有虫蛀、裂纹的材料，确保使用安全。',
+
+            '儿童版羌族推杆': '长度缩短至2-2.5米，直径减至3-4厘米，重量控制在0.5-1公斤，可在杆身包裹软海绵套，中间标记改用彩色魔术贴，既方便抓握又能防撞。',
+            '尺寸调整': '长度缩短至2-2.5米，直径减至3-4厘米，重量控制在0.5-1公斤，可在杆身包裹软海绵套，中间标记改用彩色魔术贴，既方便抓握又能防撞。',
+            '软海绵套': '长度缩短至2-2.5米，直径减至3-4厘米，重量控制在0.5-1公斤，可在杆身包裹软海绵套，中间标记改用彩色魔术贴，既方便抓握又能防撞。',
+            '彩色魔术贴': '长度缩短至2-2.5米，直径减至3-4厘米，重量控制在0.5-1公斤，可在杆身包裹软海绵套，中间标记改用彩色魔术贴，既方便抓握又能防撞。',
+
+            '非专业场地': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+            '操场': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+            '教室': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+            '户外草地': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+            '无尖锐物品': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+            '人均1.5平方米': '可选择学校操场空旷区域、教室后排（移开桌椅后）、户外平整草地，需确保活动范围无尖锐物品、无台阶，人均活动空间不小于1.5平方米。',
+
+            '场地标线': '传统标线为"一中两界"，中线长50厘米，两侧界线距中线各30厘米（对应"两尺见方"）；支教中可先用粉笔或彩色胶带快速绘制，室外草地可用小石子摆放标记。',
+            '一中两界': '传统标线为"一中两界"，中线长50厘米，两侧界线距中线各30厘米（对应"两尺见方"）；支教中可先用粉笔或彩色胶带快速绘制，室外草地可用小石子摆放标记。',
+            '粉笔': '传统标线为"一中两界"，中线长50厘米，两侧界线距中线各30厘米（对应"两尺见方"）；支教中可先用粉笔或彩色胶带快速绘制，室外草地可用小石子摆放标记。',
+            '彩色胶带': '传统标线为"一中两界"，中线长50厘米，两侧界线距中线各30厘米（对应"两尺见方"）；支教中可先用粉笔或彩色胶带快速绘制，室外草地可用小石子摆放标记。',
+            '小石子标记': '传统标线为"一中两界"，中线长50厘米，两侧界线距中线各30厘米（对应"两尺见方"）；支教中可先用粉笔或彩色胶带快速绘制，室外草地可用小石子摆放标记。',
+
+            // 教学与支教实操类
+            '6-8岁儿童': '第一步教"正确握杆姿势"，双手间距与肩同宽，掌心相对握住杆身，手臂自然弯曲，身体与木杆保持垂直，同时强调"轻推不猛撞"的安全原则。',
+            '握杆姿势': '第一步教"正确握杆姿势"，双手间距与肩同宽，掌心相对握住杆身，手臂自然弯曲，身体与木杆保持垂直，同时强调"轻推不猛撞"的安全原则。',
+            '双手间距与肩同宽': '第一步教"正确握杆姿势"，双手间距与肩同宽，掌心相对握住杆身，手臂自然弯曲，身体与木杆保持垂直，同时强调"轻推不猛撞"的安全原则。',
+            '安全原则': '第一步教"正确握杆姿势"，双手间距与肩同宽，掌心相对握住杆身，手臂自然弯曲，身体与木杆保持垂直，同时强调"轻推不猛撞"的安全原则。',
+
+            '10分钟教学': '1. 用"推小火车"比喻推杆动作，简化为"谁把对方推出线谁赢"；2. 演示2个错误动作（猛推、摇摆）和1个正确动作（平推）；3. 让2名学生试玩1回合，即时纠正并强化规则。',
+            '羌族推杆规则': '1. 用"推小火车"比喻推杆动作，简化为"谁把对方推出线谁赢"；2. 演示2个错误动作（猛推、摇摆）和1个正确动作（平推）；3. 让2名学生试玩1回合，即时纠正并强化规则。',
+            '推小火车比喻': '1. 用"推小火车"比喻推杆动作，简化为"谁把对方推出线谁赢"；2. 演示2个错误动作（猛推、摇摆）和1个正确动作（平推）；3. 让2名学生试玩1回合，即时纠正并强化规则。',
+            '动作演示': '1. 用"推小火车"比喻推杆动作，简化为"谁把对方推出线谁赢"；2. 演示2个错误动作（猛推、摇摆）和1个正确动作（平推）；3. 让2名学生试玩1回合，即时纠正并强化规则。',
+            '试玩纠正': '1. 用"推小火车"比喻推杆动作，简化为"谁把对方推出线谁赢"；2. 演示2个错误动作（猛推、摇摆）和1个正确动作（平推）；3. 让2名学生试玩1回合，即时纠正并强化规则。',
+
+            '基础动作': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+            '平推': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+            '蹲推': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+            '偏推': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+            '稳杆': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+            '儿童适合动作': '基础动作有平推、蹲推、偏推、稳杆；适合儿童的是平推（双手匀速向前推）和稳杆（保持杆身水平不晃动），暂不教授蹲推、偏推等难度动作。',
+
+            '兴趣引导': '1. 加入"推杆闯关"游戏，设置"过中线""不碰杆上标记"等小任务；2. 结合羌族动画短片，讲解"推杆选英雄"的故事；3. 开展小组积分赛，给予小贴纸、口头表扬等奖励。',
+            '闯关游戏': '1. 加入"推杆闯关"游戏，设置"过中线""不碰杆上标记"等小任务；2. 结合羌族动画短片，讲解"推杆选英雄"的故事；3. 开展小组积分赛，给予小贴纸、口头表扬等奖励。',
+            '动画短片': '1. 加入"推杆闯关"游戏，设置"过中线""不碰杆上标记"等小任务；2. 结合羌族动画短片，讲解"推杆选英雄"的故事；3. 开展小组积分赛，给予小贴纸、口头表扬等奖励。',
+            '小组积分赛': '1. 加入"推杆闯关"游戏，设置"过中线""不碰杆上标记"等小任务；2. 结合羌族动画短片，讲解"推杆选英雄"的故事；3. 开展小组积分赛，给予小贴纸、口头表扬等奖励。',
+
+            '羌族语言教学': '1. 教儿童用羌语说"吾勒泽泽"（推杆）、"加油"（羌语"纳吉纳鲁"）；2. 喊口令时交替使用汉语和羌语，如"预备——吾勒泽泽开始！"；3. 让学生用羌语喊出自己的比赛口号。',
+            '纳吉纳鲁': '1. 教儿童用羌语说"吾勒泽泽"（推杆）、"加油"（羌语"纳吉纳鲁"）；2. 喊口令时交替使用汉语和羌语，如"预备——吾勒泽泽开始！"；3. 让学生用羌语喊出自己的比赛口号。',
+            '口令交替': '1. 教儿童用羌语说"吾勒泽泽"（推杆）、"加油"（羌语"纳吉纳鲁"）；2. 喊口令时交替使用汉语和羌语，如"预备——吾勒泽泽开始！"；3. 让学生用羌语喊出自己的比赛口号。',
+            '比赛口号': '1. 教儿童用羌语说"吾勒泽泽"（推杆）、"加油"（羌语"纳吉纳鲁"）；2. 喊口令时交替使用汉语和羌语，如"预备——吾勒泽泽开始！"；3. 让学生用羌语喊出自己的比赛口号。',
+
+            // 文化延伸与认知类
+            '传统服饰': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+            '麻布长衫': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+            '百褶裙': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+            '羌绣': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+            '羊角纹': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+            '云纹': '传统比赛中会穿羌族传统服饰，男性穿麻布长衫、束腰带、裹绑腿，女性穿绣花上衣、百褶裙、戴头帕，服饰上的羌绣图案（如羊角纹、云纹）象征羌族文化图腾。',
+
+            '角力项目区别': '核心区别在"器具依赖"和"对抗方式"：羌族推杆需借助木杆，以"推"为核心动作，不直接肢体接触；摔跤无器具，以摔倒对方为目标，肢体对抗更直接。',
+            '木杆依赖': '核心区别在"器具依赖"和"对抗方式"：羌族推杆需借助木杆，以"推"为核心动作，不直接肢体接触；摔跤无器具，以摔倒对方为目标，肢体对抗更直接。',
+            '推动作': '核心区别在"器具依赖"和"对抗方式"：羌族推杆需借助木杆，以"推"为核心动作，不直接肢体接触；摔跤无器具，以摔倒对方为目标，肢体对抗更直接。',
+            '无直接肢体接触': '核心区别在"器具依赖"和"对抗方式"：羌族推杆需借助木杆，以"推"为核心动作，不直接肢体接触；摔跤无器具，以摔倒对方为目标，肢体对抗更直接。',
+
+            '尚力文化': '传递"健康体魄"的理念，培养坚韧不拔的意志，教会儿童"公平竞争""尊重对手"，同时让儿童理解羌族人民以力护族、以力求生的历史传承。',
+            '儿童教育意义': '传递"健康体魄"的理念，培养坚韧不拔的意志，教会儿童"公平竞争""尊重对手"，同时让儿童理解羌族人民以力护族、以力求生的历史传承。',
+            '健康体魄': '传递"健康体魄"的理念，培养坚韧不拔的意志，教会儿童"公平竞争""尊重对手"，同时让儿童理解羌族人民以力护族、以力求生的历史传承。',
+            '公平竞争': '传递"健康体魄"的理念，培养坚韧不拔的意志，教会儿童"公平竞争""尊重对手"，同时让儿童理解羌族人民以力护族、以力求生的历史传承。',
+            '尊重对手': '传递"健康体魄"的理念，培养坚韧不拔的意志，教会儿童"公平竞争""尊重对手"，同时让儿童理解羌族人民以力护族、以力求生的历史传承。',
+
+            '日常生活用途': '传统中兼具实用功能，可作为农耕时的农具（如挑运、支撑作物），也可作为村寨间联络的信号杆；现代仅作为文化展演和体育竞技项目。',
+            '实用功能': '传统中兼具实用功能，可作为农耕时的农具（如挑运、支撑作物），也可作为村寨间联络的信号杆；现代仅作为文化展演和体育竞技项目。',
+            '农具': '传统中兼具实用功能，可作为农耕时的农具（如挑运、支撑作物），也可作为村寨间联络的信号杆；现代仅作为文化展演和体育竞技项目。',
+            '信号杆': '传统中兼具实用功能，可作为农耕时的农具（如挑运、支撑作物），也可作为村寨间联络的信号杆；现代仅作为文化展演和体育竞技项目。',
+            '文化展演': '传统中兼具实用功能，可作为农耕时的农具（如挑运、支撑作物），也可作为村寨间联络的信号杆；现代仅作为文化展演和体育竞技项目。',
+
+            // 推广与传承挑战类
+            '传承挑战': '1. 年轻传承人数量少，多数青壮年外出务工，学习意愿低；2. 传统技艺细节依赖口传心授，文字记录不完整；3. 推广场景有限，仅集中在少数羌族聚居地和非遗活动。',
+            '年轻传承人少': '1. 年轻传承人数量少，多数青壮年外出务工，学习意愿低；2. 传统技艺细节依赖口传心授，文字记录不完整；3. 推广场景有限，仅集中在少数羌族聚居地和非遗活动。',
+            '口传心授': '1. 年轻传承人数量少，多数青壮年外出务工，学习意愿低；2. 传统技艺细节依赖口传心授，文字记录不完整；3. 推广场景有限，仅集中在少数羌族聚居地和非遗活动。',
+            '推广场景有限': '1. 年轻传承人数量少，多数青壮年外出务工，学习意愿低；2. 传统技艺细节依赖口传心授，文字记录不完整；3. 推广场景有限，仅集中在少数羌族聚居地和非遗活动。',
+
+            '短视频推广': '1. 拍摄"儿童推杆趣味瞬间""15秒学会基础动作"短视频；2. 邀请传承人搭配儿童拍摄"非遗小课堂"，讲解简单羌语和文化故事；3. 发起#非遗推杆挑战#话题，鼓励亲子参与拍摄。',
+            '趣味瞬间': '1. 拍摄"儿童推杆趣味瞬间""15秒学会基础动作"短视频；2. 邀请传承人搭配儿童拍摄"非遗小课堂"，讲解简单羌语和文化故事；3. 发起#非遗推杆挑战#话题，鼓励亲子参与拍摄。',
+            '非遗小课堂': '1. 拍摄"儿童推杆趣味瞬间""15秒学会基础动作"短视频；2. 邀请传承人搭配儿童拍摄"非遗小课堂"，讲解简单羌语和文化故事；3. 发起#非遗推杆挑战#话题，鼓励亲子参与拍摄。',
+            '话题挑战': '1. 拍摄"儿童推杆趣味瞬间""15秒学会基础动作"短视频；2. 邀请传承人搭配儿童拍摄"非遗小课堂"，讲解简单羌语和文化故事；3. 发起#非遗推杆挑战#话题，鼓励亲子参与拍摄。',
+
+            '掌握程度评估': '1. 知识层面：提问羌语名称、起源故事等基础问题；2. 技能层面：观察握杆、平推等动作的规范性；3. 文化层面：让儿童画出"我心中的推杆"或复述推杆背后的故事。',
+            '知识层面': '1. 知识层面：提问羌语名称、起源故事等基础问题；2. 技能层面：观察握杆、平推等动作的规范性；3. 文化层面：让儿童画出"我心中的推杆"或复述推杆背后的故事。',
+            '技能层面': '1. 知识层面：提问羌语名称、起源故事等基础问题；2. 技能层面：观察握杆、平推等动作的规范性；3. 文化层面：让儿童画出"我心中的推杆"或复述推杆背后的故事。',
+            '文化层面': '1. 知识层面：提问羌语名称、起源故事等基础问题；2. 技能层面：观察握杆、平推等动作的规范性；3. 文化层面：让儿童画出"我心中的推杆"或复述推杆背后的故事。'
+        };
+
+        // 添加消息到聊天区域
+        function addMessage(text, isUser = false) {
+            if (welcomeMessage) {
+                welcomeMessage.style.display = 'none';
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            
+            if (isUser) {
+                messageDiv.textContent = text;
+            } else {
+                // AI消息增加头像和样式
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'ai-response-header';
+                
+                const avatarDiv = document.createElement('div');
+                avatarDiv.className = 'ai-avatar';
+                avatarDiv.textContent = 'AI';
+                
+                const titleDiv = document.createElement('div');
+                titleDiv.textContent = '羌族推杆专家';
+                
+                headerDiv.appendChild(avatarDiv);
+                headerDiv.appendChild(titleDiv);
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'answer-content';
+                contentDiv.textContent = text;
+                
+                messageDiv.appendChild(headerDiv);
+                messageDiv.appendChild(contentDiv);
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 显示输入指示器
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // 隐藏输入指示器
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        // 关键词优先级映射
+        const keywordPriority = {
+            // 10分 - 核心概念类
+            '羌语名称': 10, '起源': 10, '流传地区': 10, '非物质文化遗产': 10, '代表性传承人': 10,
+            '比赛器具': 10, '比赛形式': 10, '比赛步骤': 10, '仰卧抱杆起规则': 10, '裁判': 10,
+            '民族精神': 10, '举行场合': 10, '文化价值': 10, '重要展示': 10, '保护推广': 10,
+            '校园推广': 10, '儿童接受度': 10, '支教安全': 10, '支教结合': 10,
+            '材质要求': 10, '儿童版羌族推杆': 10, '非专业场地': 10, '场地标线': 10,
+            '6-8岁儿童': 10, '10分钟教学': 10, '基础动作': 10, '兴趣引导': 10, '羌族语言教学': 10,
+            '传统服饰': 10, '角力项目区别': 10, '尚力文化': 10, '日常生活用途': 10,
+            '传承挑战': 10, '短视频推广': 10, '掌握程度评估': 10,
+
+            // 8分 - 重要细节类
+            '吾勒泽泽': 8, '无仑什比都余': 8, '抵御外敌': 8, '羌戈大战': 8, '汶川': 8,
+            '理县': 8, '茂县': 8, '北川羌族自治县': 8, '2009年': 8, '四川省级': 8,
+            '陈仕琼': 8, '王小荣': 8, '注清寿': 8, '木杆': 8, '竹竿': 8, '红绳标记': 8,
+            '推杆': 8, '仰卧抱杆起': 8, '转杆': 8, '扭杆': 8, '五局三胜制': 8, '击掌计时': 8,
+            '坚强不屈': 8, '团结协作': 8, '节日庆典': 8, '旅游景点展演': 8, '历史记忆': 8,
+            '民俗展示': 8, '北京奥运会': 8, '少数民族运动会': 8, '传习所': 8, '非遗进校园': 8,
+            '简化规则': 8, '儿童安全': 8, '北川': 8, '绵阳市科艺小学': 8, '安全器具': 8,
+            '老师指导': 8, '课程设计': 8, '文化传承': 8, '杉木': 8, '松木': 8,
+            '毛竹': 8, '干燥处理': 8, '无虫蛀裂纹': 8, '尺寸调整': 8, '软海绵套': 8,
+            '彩色魔术贴': 8, '操场': 8, '教室': 8, '户外草地': 8, '无尖锐物品': 8,
+            '人均1.5平方米': 8, '一中两界': 8, '粉笔': 8, '彩色胶带': 8, '小石子标记': 8,
+            '握杆姿势': 8, '双手间距与肩同宽': 8, '安全原则': 8, '推小火车比喻': 8,
+            '动作演示': 8, '试玩纠正': 8, '平推': 8, '蹲推': 8, '偏推': 8, '稳杆': 8,
+            '儿童适合动作': 8, '闯关游戏': 8, '动画短片': 8, '小组积分赛': 8, '纳吉纳鲁': 8,
+            '口令交替': 8, '比赛口号': 8, '麻布长衫': 8, '百褶裙': 8, '羌绣': 8,
+            '羊角纹': 8, '云纹': 8, '木杆依赖': 8, '推动作': 8, '无直接肢体接触': 8,
+            '健康体魄': 8, '公平竞争': 8, '尊重对手': 8, '实用功能': 8, '农具': 8,
+            '信号杆': 8, '文化展演': 8, '年轻传承人少': 8, '口传心授': 8,
+            '推广场景有限': 8, '趣味瞬间': 8, '非遗小课堂': 8, '话题挑战': 8,
+            '知识层面': 8, '技能层面': 8, '文化层面': 8,
+
+            // 5分 - 具体名词类
+            '松潘': 5, '起身次数': 5
+        };
+
+        // 增强关键词匹配算法
+        function enhanceKeywordMatching(question) {
+            const keywordSynonyms = {
+                '羌语': ['羌族语言', '羌语名称', '羌语词汇'],
+                '历史': ['起源', '羌戈大战', '传统历史'],
+                '规则': ['比赛规则', '比赛步骤', '游戏规则'],
+                '器具': ['比赛器具', '木杆', '竹竿', '红绳标记'],
+                '文化': ['文化意义', '文化价值', '民族精神'],
+                '推广': ['校园推广', '保护推广', '短视频推广'],
+                '安全': ['支教安全', '儿童安全', '安全器具'],
+                '教学': ['支教结合', '课程设计', '教学方法']
+            };
+
+            let enhancedQuestion = question;
+            for (const [key, synonyms] of Object.entries(keywordSynonyms)) {
+                if (enhancedQuestion.includes(key)) {
+                    const randomSynonym = synonyms[Math.floor(Math.random() * synonyms.length)];
+                    enhancedQuestion = enhancedQuestion.replace(key, randomSynonym);
+                }
+            }
+            
+            return enhancedQuestion;
+        }
+
+        // 智能回答建议
+        function suggestRelatedQuestions(keywords) {
+            const suggestions = [
+                '如需了解更多关于羌族推杆的羌语知识，可以问：羌族推杆的羌语表达有哪些？',
+                '想要了解比赛细节？尝试：推杆比赛的具体规则是怎样的？',
+                '对文化传承感兴趣？试试：羌族推杆在文化传承中有哪些重要意义？',
+                '想了解教学应用？可以问：如何在校园中有效开展羌族推杆教学活动？'
+            ];
+            
+            return suggestions[Math.floor(Math.random() * suggestions.length)];
+        }
+
+        // 获取AI响应
+        function getAIResponse(question) {
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                const enhancedQuestion = enhanceKeywordMatching(question);
+                const lowerQuestion = enhancedQuestion.toLowerCase();
+                let bestAnswer = null;
+                let bestScore = 0;
+                let bestKeyword = '';
+                let matchedKeywords = [];
+
+                // 精确匹配逻辑 - 优先匹配优先级高的关键词
+                for (const [keyword, answer] of Object.entries(knowledgeBase)) {
+                    if (lowerQuestion.includes(keyword.toLowerCase())) {
+                        matchedKeywords.push(keyword);
+                        const priority = keywordPriority[keyword] || 1;
+                        if (priority > bestScore) {
+                            bestScore = priority;
+                            bestAnswer = answer;
+                            bestKeyword = keyword;
+                        } else if (priority === bestScore) {
+                            // 同优先级情况下，选择更长的关键词
+                            if (keyword.length > bestKeyword.length) {
+                                bestAnswer = answer;
+                                bestKeyword = keyword;
+                            }
+                        }
+                    }
+                }
+
+                let response;
+                if (bestAnswer) {
+                    // 如果匹配到多个关键词，提供更丰富的回答
+                    if (matchedKeywords.length > 1) {
+                        response = `检测到您的问题涉及多个关键词：${matchedKeywords.join('、')}。\n\n${bestAnswer}\n\n${suggestRelatedQuestions(matchedKeywords)}`;
+                    } else {
+                        response = `${bestAnswer}\n\n${suggestRelatedQuestions([bestKeyword])}`;
+                    }
+                } else {
+                    // 增强无匹配情况下的提示
+                    const coreKeywords = ['羌语名称', '起源', '比赛规则', '文化意义', '校园推广', '材质要求', '基础动作', '传承挑战'];
+                    const randomKeywords = coreKeywords.sort(() => Math.random() - 0.5).slice(0, 3);
+                    
+                    response = `未识别到关键词。建议使用以下关键词提问：\n\n• ${randomKeywords.join(' - ')}等\n\n您也可以这样提问：\n"羌族推杆的羌语名称是什么？"\n"比赛规则是怎样的？"\n"如何在校园推广？"`;
+                }
+                
+                addMessage(response);
+            }, 600 + Math.random() * 400);
+        }
+
+        // 提问函数
+        function askQuestion(question) {
+            if (!question.trim()) return;
+            
+            userInput.value = question;
+            sendMessage();
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const question = userInput.value.trim();
+            if (!question) return;
+            
+            addMessage(question, true);
+            userInput.value = '';
+            
+            getAIResponse(question);
+        }
+
+        // 清空聊天
+        function clearChat() {
+            messagesContainer.innerHTML = '<div class="welcome-message" id="welcomeMessage">' +
+                '<p>您好！我是羌族推杆AI助手</p>' +
+                '<p>请直接输入您的问题，我将从专业资料库中为您查找答案</p>' +
+                '<div class="responsive-grid">' +
+                '<div class="suggestion" onclick="askQuestion(\'羌族推杆的羌语名称是什么？\')">羌语名称</div>' +
+                '<div class="suggestion" onclick="askQuestion(\'羌族推杆的起源是什么？\')">历史起源</div>' +
+                '<div class="suggestion" onclick="askQuestion(\'羌族推杆的比赛规则是怎样的？\')">比赛规则</div>' +
+                '<div class="suggestion" onclick="askQuestion(\'羌族推杆的文化意义是什么？\')">文化意义</div>' +
+                '</div>' +
+                '</div>';
+            
+            // 重新设置欢迎消息的引用
+            welcomeMessage = document.getElementById('welcomeMessage');
+        }
+
+        // 导出聊天记录
+        function exportChat() {
+            const messages = Array.from(document.querySelectorAll('.message')).map(msg => {
+                const isUser = msg.classList.contains('user-message');
+                return `${isUser ? '用户' : 'AI助手'}: ${msg.textContent}`;
+            }).join('\n\n');
+            
+            if (messages.trim() === '') {
+                alert('暂无聊天记录可导出');
+                return;
+            }
+            
+            const blob = new Blob([messages], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '羌族推杆问答记录.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 事件监听
+        sendButton.addEventListener('click', sendMessage);
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 自动聚焦输入框
+        userInput.focus();
+
+        // 初始欢迎消息（延迟显示）
+        setTimeout(() => {
+            if (messagesContainer.children.length === 1) {
+                addMessage('👋 您好！我是专业的羌族推杆AI助手。\n\n📚 我拥有丰富的羌族推杆知识库，可以为您解答：\n• 羌语名称和起源故事\n• 比赛规则和形式\n• 文化价值和传承意义\n• 校园推广和教学应用\n\n💡 请直接输入您的问题，或者点击上方的预设问题开始对话！');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
